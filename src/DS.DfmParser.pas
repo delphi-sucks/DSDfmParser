@@ -14,7 +14,7 @@ type
     FName: String;
     FValue: String;
   public
-    constructor Create(Owner: TDfmObject; const Name, Value: String);
+    constructor Create(AOwner: TDfmObject; const AName, AValue: String);
     procedure Assign(Source: TPersistent); override;
     property Owner: TDfmObject read FOwner;
     property Name: String read FName write FName;
@@ -24,7 +24,7 @@ type
   TDfmObject = class(TObject)
   type
 
-    TDfmObjectType = (dotObject, dotInherited, dotInline);
+    TDfmObjectType = (doObject, doInherited, doInline);
 
     TDfmPropertyList = class(TObjectList<TDfmProperty>)
     type
@@ -36,7 +36,7 @@ type
     public
       constructor Create;
       destructor Destroy; override;
-      function GetProperty(const Name: String): TDfmProperty;
+      function GetProperty(const AName: String): TDfmProperty;
       property Names: TNames read FNames;
     end;
 
@@ -50,7 +50,7 @@ type
     public
       constructor Create;
       destructor Destroy; override;
-      function GetObject(const Name: String): TDfmObject;
+      function GetObject(const AName: String): TDfmObject;
       property Names: TNames read FNames;
     end;
 
@@ -67,13 +67,13 @@ type
     FPropertiesSaved: TObjectList<TDfmProperty>;
     FObjectsSaved: TObjectList<TDfmObject>;
   public
-    constructor Create(const Owner: TDfmObject; const Name: String);
+    constructor Create(const AOwner: TDfmObject; const AName: String);
     destructor Destroy; override;
-    function HasProperty(const PropertyName: String): Boolean; overload;
-    function HasProperty(const PropertyName, Value: String): Boolean; overload;
-    function GetProperty(const PropertyName: String): String;
-    function HasObject(const Name: String): Boolean;
-    function GetObject(const Name: String; const Recursive: Boolean = False): TDfmObject;
+    function HasProperty(const APropertyName: String): Boolean; overload;
+    function HasProperty(const APropertyName, AValue: String): Boolean; overload;
+    function GetProperty(const APropertyName: String): String;
+    function HasObject(const AName: String): Boolean;
+    function GetObject(const AName: String; const ARecursive: Boolean = False): TDfmObject;
     property Owner: TDfmObject read FOwner;
     property Name: String read FName write FName;
     property ClassName_: String read FClassName write FClassName;
@@ -85,12 +85,12 @@ type
 
   TDfmFile = class(TDfmObject)
   strict private
-    procedure Parse(const DfmContent: String);
+    procedure Parse(const ADfmContent: String);
   public
     constructor Create; overload;
-    procedure Save(const FileName: String);
-    procedure LoadFromFile(const FileName: String);
-    procedure LoadFromString(const DfmContent: String);
+    procedure Save(const AFileName: String);
+    procedure LoadFromFile(const AFileName: String);
+    procedure LoadFromString(const ADfmContent: String);
     function GetDfm: String;
   end;
 
@@ -106,11 +106,11 @@ const
 
 { TDfmObject }
 
-constructor TDfmObject.Create(const Owner: TDfmObject; const Name: String);
+constructor TDfmObject.Create(const AOwner: TDfmObject; const AName: String);
 begin
   inherited Create;
-  FOwner := Owner;
-  FName := Name;
+  FOwner := AOwner;
+  FName := AName;
   FId := -1;
   if FOwner <> nil then
   begin
@@ -131,7 +131,7 @@ begin
   inherited;
 end;
 
-function TDfmObject.GetObject(const Name: String; const Recursive: Boolean): TDfmObject;
+function TDfmObject.GetObject(const AName: String; const ARecursive: Boolean): TDfmObject;
 
   function Search(const DfmObjectParent: TDfmObject; const Name: String): TDfmObject;
   var
@@ -158,14 +158,14 @@ function TDfmObject.GetObject(const Name: String; const Recursive: Boolean): TDf
 var
   DfmObject: TDfmObject;
 begin
-  if Recursive then
+  if ARecursive then
   begin
-    Result := Search(Self, Name);
+    Result := Search(Self, AName);
   end else
   begin
     for DfmObject in Objects do
     begin
-      if DfmObject.Name.ToLower = Name.ToLower then
+      if DfmObject.Name.ToLower = AName.ToLower then
       begin
         Result := DfmObject;
         Exit;
@@ -175,11 +175,11 @@ begin
   end;
 end;
 
-function TDfmObject.GetProperty(const PropertyName: String): String;
+function TDfmObject.GetProperty(const APropertyName: String): String;
 var
   DfmProperty: TDfmProperty;
 begin
-  DfmProperty := Properties.GetProperty(PropertyName);
+  DfmProperty := Properties.GetProperty(APropertyName);
   if DfmProperty = nil then
   begin
     Result := EmptyStr;
@@ -189,13 +189,13 @@ begin
   end;
 end;
 
-function TDfmObject.HasObject(const Name: String): Boolean;
+function TDfmObject.HasObject(const AName: String): Boolean;
 var
   DfmObject: TDfmObject;
 begin
   for DfmObject in Objects do
   begin
-    if DfmObject.Name.ToLower = Name.ToLower then
+    if DfmObject.Name.ToLower = AName.ToLower then
     begin
       Result := True;
       Exit;
@@ -204,37 +204,37 @@ begin
   Result := False;
 end;
 
-function TDfmObject.HasProperty(const PropertyName, Value: String): Boolean;
+function TDfmObject.HasProperty(const APropertyName, AValue: String): Boolean;
 var
   objDfmProperty: TDfmProperty;
 begin
-  Result := Properties.Names.TryGetValue(PropertyName.ToLower, objDfmProperty)
-   and (objDfmProperty.Value = Value);
+  Result := Properties.Names.TryGetValue(APropertyName.ToLower, objDfmProperty)
+   and (objDfmProperty.Value = AValue);
 end;
 
-function TDfmObject.HasProperty(const PropertyName: String): Boolean;
+function TDfmObject.HasProperty(const APropertyName: String): Boolean;
 begin
-  Result := Properties.Names.ContainsKey(PropertyName.ToLower);
+  Result := Properties.Names.ContainsKey(APropertyName.ToLower);
 end;
 
 { TDfmFile }
 
-procedure TDfmFile.Parse(const DfmContent: String);
+procedure TDfmFile.Parse(const ADfmContent: String);
 var
   Lines: TStringList;
   LineNumber: Integer;
   LineCount: Integer;
   LineContent: String;
   Value: String;
-  RegEx_object: TRegEx;
-  RegEx_property: TRegEx;
+  RegExObject: TRegEx;
+  RegExProperty: TRegEx;
   Match: TMatch;
 
   objDfmObject: TDfmObject;
 
-  function GetLine(_bTrim: Boolean = True): String;
+  function GetLine(ATrim: Boolean = True): String;
   begin
-    if _bTrim then
+    if ATrim then
     begin
       Result := Lines[LineNumber].Trim;
     end else
@@ -252,12 +252,12 @@ var
 begin
   objDfmObject := nil;
 
-  RegEx_object := TRegEx.Create('^([a-z]+) (?:([a-z0-9_]+): )?([a-z0-9_]+)(?: \[([0-9]+)\])?$', [roIgnoreCase]);
-  RegEx_property := TRegEx.Create('^([a-z0-9_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
+  RegExObject := TRegEx.Create('^([a-z]+) (?:([a-z0-9_]+): )?([a-z0-9_]+)(?: \[([0-9]+)\])?$', [roIgnoreCase]);
+  RegExProperty := TRegEx.Create('^([a-z0-9_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
   Lines := TStringList.Create;
   try
     Lines.Delimiter := LF;
-    Lines.Text := DfmContent;
+    Lines.Text := ADfmContent;
     LineCount := Lines.Count;
     LineNumber := 0;
 
@@ -266,7 +266,7 @@ begin
       LineContent := GetLine;
 
       // object
-      Match := RegEx_object.Match(LineContent);
+      Match := RegExObject.Match(LineContent);
       if Match.Success then
       begin
         Name := EmptyStr;
@@ -302,15 +302,15 @@ begin
 
         if Match.Groups[1].Value.ToLower = 'object' then
         begin
-          objDfmObject.ObjectType := dotObject;
+          objDfmObject.ObjectType := doObject;
         end else
         if Match.Groups[1].Value.ToLower = 'inherited' then
         begin
-          objDfmObject.ObjectType := dotInherited;
+          objDfmObject.ObjectType := doInherited;
         end else
         if Match.Groups[1].Value.ToLower = 'inline' then
         begin
-          objDfmObject.ObjectType := dotInline;
+          objDfmObject.ObjectType := doInline;
         end else
         begin
           //prcLog(Self, 'Unknown DFM Object type "' + objMatch.Groups[1].Value + '"!', lpError);
@@ -321,7 +321,7 @@ begin
       end;
 
       // property
-      Match := RegEx_property.Match(LineContent);
+      Match := RegExProperty.Match(LineContent);
       if Match.Success then
       begin
         if objDfmObject <> nil then
@@ -377,9 +377,6 @@ begin
               Value := Value + GetLine(False) + CRLF;
             until Value.Substring(Value.Length - 3, 1) <> '+';
             Value := Value.TrimRight;
-          end else
-          begin
-            Value := Value;
           end;
 
           TDfmProperty.Create(objDfmObject, Match.Groups[1].Value, Value);
@@ -410,50 +407,50 @@ function TDfmFile.GetDfm: String;
 var
   DFM: String;
 
-  procedure RenderWhitespace(const Depth: Integer);
+  procedure RenderWhitespace(const ADepth: Integer);
   begin
-    DFM := DFM + EmptyStr.PadLeft(Depth * 2);
+    DFM := DFM + EmptyStr.PadLeft(ADepth * 2);
   end;
 
-  procedure RenderProperty(const DfmProperty: TDfmProperty; const Depth: Integer);
+  procedure RenderProperty(const ADfmProperty: TDfmProperty; const ADepth: Integer);
   begin
-    RenderWhitespace(Depth);
-    DFM := DFM + DfmProperty.Name + ' = ' + DfmProperty.Value + CRLF;
+    RenderWhitespace(ADepth);
+    DFM := DFM + ADfmProperty.Name + ' = ' + ADfmProperty.Value + CRLF;
   end;
 
-  procedure RenderObject(const _objDfmObject: TDfmObject; const _iDepth: Integer);
+  procedure RenderObject(const ADfmObject: TDfmObject; const ADepth: Integer);
   var
-    objDfmProperty:     TDfmProperty;
-    objDfmObjectChild:  TDfmObject;
+    objDfmProperty: TDfmProperty;
+    objDfmObjectChild: TDfmObject;
   begin
-    RenderWhitespace(_iDepth);
-    case _objDfmObject.ObjectType of
-      dotObject:
+    RenderWhitespace(ADepth);
+    case ADfmObject.ObjectType of
+      doObject:
         DFM := DFM + 'object ';
-      dotInherited:
+      doInherited:
         DFM := DFM + 'inherited ';
-      dotInline:
+      doInline:
         DFM := DFM + 'inline ';
     end;
-    if _objDfmObject.Name <> EmptyStr then
+    if ADfmObject.Name <> EmptyStr then
     begin
-      DFM := DFM + _objDfmObject.Name + ': ';
+      DFM := DFM + ADfmObject.Name + ': ';
     end;
-    DFM := DFM + _objDfmObject.ClassName_;
-    if _objDfmObject.Id >= 0 then
+    DFM := DFM + ADfmObject.ClassName_;
+    if ADfmObject.Id >= 0 then
     begin
-      DFM := DFM + ' [' + _objDfmObject.Id.ToString + ']';
+      DFM := DFM + ' [' + ADfmObject.Id.ToString + ']';
     end;
     DFM := DFM + CRLF;
-    for objDfmProperty in _objDfmObject.Properties do
+    for objDfmProperty in ADfmObject.Properties do
     begin
-      RenderProperty(objDfmProperty, _iDepth + 1);
+      RenderProperty(objDfmProperty, ADepth + 1);
     end;
-    for objDfmObjectChild in _objDfmObject.Objects do
+    for objDfmObjectChild in ADfmObject.Objects do
     begin
-      RenderObject(objDfmObjectChild, _iDepth + 1);
+      RenderObject(objDfmObjectChild, ADepth + 1);
     end;
-    RenderWhitespace(_iDepth);
+    RenderWhitespace(ADepth);
     DFM := DFM + 'end' + CRLF;
   end;
 
@@ -467,27 +464,27 @@ begin
   inherited Create(nil, EmptyStr);
 end;
 
-procedure TDfmFile.Save(const FileName: String);
+procedure TDfmFile.Save(const AFileName: String);
 var
-  lstFile:  TStringList;
+  Lines: TStringList;
 begin
-  lstFile := TStringList.Create;
+  Lines := TStringList.Create;
   try
-    lstFile.Text := GetDfm;
-    lstFile.SaveToFile(FileName);
+    Lines.Text := GetDfm;
+    Lines.SaveToFile(AFileName);
   finally
-    FreeAndNil(lstFile);
+    FreeAndNil(Lines);
   end;
 end;
 
-procedure TDfmFile.LoadFromFile(const FileName: String);
+procedure TDfmFile.LoadFromFile(const AFileName: String);
 begin
-  Parse(TFile.ReadAllText(FileName));
+  Parse(TFile.ReadAllText(AFileName));
 end;
 
-procedure TDfmFile.LoadFromString(const DfmContent: String);
+procedure TDfmFile.LoadFromString(const ADfmContent: String);
 begin
-  Parse(DfmContent);
+  Parse(ADfmContent);
 end;
 
 { TDfmProperty }
@@ -498,7 +495,7 @@ var
 begin
   if Source is TDfmProperty then
   begin
-    DfmProperty := (Source as TDfmProperty);
+    DfmProperty := Source as TDfmProperty;
     FOwner := DfmProperty.Owner;
     FName := DfmProperty.Name;
     FValue := DfmProperty.Value;
@@ -508,12 +505,12 @@ begin
   end;
 end;
 
-constructor TDfmProperty.Create(Owner: TDfmObject; const Name, Value: String);
+constructor TDfmProperty.Create(AOwner: TDfmObject; const AName, AValue: String);
 begin
   inherited Create;
-  FOwner := Owner;
-  FName := Name;
-  FValue := Value;
+  FOwner := AOwner;
+  FName := AName;
+  FValue := AValue;
   FOwner.Properties.Add(Self);
 end;
 
@@ -532,9 +529,9 @@ begin
   inherited;
 end;
 
-function TDfmObject.TDfmObjectList.GetObject(const Name: String): TDfmObject;
+function TDfmObject.TDfmObjectList.GetObject(const AName: String): TDfmObject;
 begin
-  if not FNames.TryGetValue(Name.ToLower, Result) then
+  if not FNames.TryGetValue(AName.ToLower, Result) then
   begin
     Result := nil;
   end;
@@ -569,9 +566,9 @@ begin
   inherited;
 end;
 
-function TDfmObject.TDfmPropertyList.GetProperty(const Name: String): TDfmProperty;
+function TDfmObject.TDfmPropertyList.GetProperty(const AName: String): TDfmProperty;
 begin
-  if not Names.TryGetValue(Name.ToLower, Result) then
+  if not Names.TryGetValue(AName.ToLower, Result) then
   begin
     Result := nil;
   end;
