@@ -250,6 +250,11 @@ var
   ClassName: String;
   Id: Integer;
 begin
+  Self.Name := EmptyStr;
+  Self.ClassName_ := EmptyStr;
+  Self.Id := 0;
+  Properties.Clear;
+  Objects.Clear;
   objDfmObject := nil;
 
   RegExObject := TRegEx.Create('^([a-z]+) (?:([a-z0-9_]+): )?([a-z0-9_]+)(?: \[([0-9]+)\])?$', [roIgnoreCase]);
