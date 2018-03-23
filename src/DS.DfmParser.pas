@@ -3,9 +3,11 @@ unit DS.DfmParser;
 interface
 
 uses
-  System.Classes, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.Generics.Collections;
 
 type
+  EDfmParseInvalidFormat = class(Exception);
+
   TDfmObject = class;
 
   TDfmProperty = class(TPersistent)
@@ -97,7 +99,7 @@ type
 implementation
 
 uses
-  System.SysUtils, System.IOUtils, System.RegularExpressions;
+  System.IOUtils, System.RegularExpressions;
 
 const
   CR = #13;
@@ -250,6 +252,10 @@ var
   ClassName: String;
   Id: Integer;
 begin
+  if not ADfmContent.StartsWith('object') then
+  begin
+    raise EDfmParseInvalidFormat.Create('Expected "object" at the beginning of the file');
+  end;
   Self.Name := EmptyStr;
   Self.ClassName_ := EmptyStr;
   Self.Id := 0;
