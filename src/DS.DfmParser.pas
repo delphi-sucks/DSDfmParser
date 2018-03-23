@@ -257,8 +257,8 @@ begin
   Objects.Clear;
   objDfmObject := nil;
 
-  RegExObject := TRegEx.Create('^([a-z]+) (?:([a-z0-9_]+): )?([a-z0-9_]+)(?: \[([0-9]+)\])?$', [roIgnoreCase]);
-  RegExProperty := TRegEx.Create('^([a-z0-9_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
+  RegExObject := TRegEx.Create('^(\w+) (?:([\w\däöü_]+): )?([\w\d_]+)(?: \[(\d+)\])?$', [roIgnoreCase]);
+  RegExProperty := TRegEx.Create('^([\w\d_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
   Lines := TStringList.Create;
   try
     Lines.Delimiter := LF;
