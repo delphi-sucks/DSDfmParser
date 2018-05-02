@@ -252,9 +252,11 @@ var
   ClassName: String;
   Id: Integer;
 begin
-  if not ADfmContent.StartsWith('object') then
+  if not ADfmContent.StartsWith('object', True)
+  and not ADfmContent.StartsWith('inherited', True)
+  and not ADfmContent.StartsWith('inline', True) then
   begin
-    raise EDfmParseInvalidFormat.Create('Expected "object" at the beginning of the file');
+    raise EDfmParseInvalidFormat.Create('Invalid dfm file!');
   end;
   Self.Name := EmptyStr;
   Self.ClassName_ := EmptyStr;
