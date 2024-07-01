@@ -45,7 +45,7 @@ type
 
     function HasObject(const AName: String): Boolean;
     function GetObject(const AName: String; ARecursive: Boolean = False): TDfmObject;
-    function GetObjects(const AClassName: String; ARecursive: Boolean = False): TList<TDfmObject>;
+    function GetObjectsByClass(const AClassName: String; ARecursive: Boolean = False): TList<TDfmObject>;
     procedure DeleteObject(const AName: String);
 
     property Owner: TDfmObject read FOwner;
@@ -159,7 +159,7 @@ begin
   end;
 end;
 
-function TDfmObject.GetObjects(const AClassName: String; ARecursive: Boolean): TList<TDfmObject>;
+function TDfmObject.GetObjectsByClass(const AClassName: String; ARecursive: Boolean): TList<TDfmObject>;
 
   function Search(const DfmObjectParent: TDfmObject; const ClassName: String): TList<TDfmObject>;
   var

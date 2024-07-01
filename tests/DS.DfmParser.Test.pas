@@ -83,7 +83,7 @@ type
     [TestCase('Object exists within child case insensitive', 'TCHECKBOX,True,3')]
     [TestCase('Object doesn''t exist resursive', 'TDoesnot,True,0')]
     [TestCase('Empty string recursive', ',True,0')]
-    procedure GetObjects(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
+    procedure GetObjectsByClass(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
 
     [Test]
     [TestCase('Object exists', 'Panel1')]
@@ -138,11 +138,11 @@ begin
     Assert.IsNull(DfmFile.GetObject(AName, ARecursive));
 end;
 
-procedure DfmObjectTest.GetObjects(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
+procedure DfmObjectTest.GetObjectsByClass(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
 var
   Objects: TList<TDfmObject>;
 begin
-  Objects := DfmFile.GetObjects(AClassName, ARecursive);
+  Objects := DfmFile.GetObjectsByClass(AClassName, ARecursive);
   try
     Assert.IsNotNull(Objects);
     Assert.AreEqual(Objects.Count, AExpectedCount);
