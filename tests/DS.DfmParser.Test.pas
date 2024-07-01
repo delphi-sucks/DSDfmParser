@@ -73,6 +73,19 @@ type
     procedure GetObject(const AName: String; ARecursive: Boolean; AExpected: Boolean);
 
     [Test]
+    // Non recursive
+    [TestCase('Object exists', 'TPanel,False,2')]
+    [TestCase('Object exists case insensitive', 'TpANeL,False,2')]
+    [TestCase('Object doesn''t exist', 'TDoesnot,False,0')]
+    [TestCase('Empty string', ',False,0')]
+    // Recursive
+    [TestCase('Object exists within child', 'TCheckBox,True,3')]
+    [TestCase('Object exists within child case insensitive', 'TCHECKBOX,True,3')]
+    [TestCase('Object doesn''t exist resursive', 'TDoesnot,True,0')]
+    [TestCase('Empty string recursive', ',True,0')]
+    procedure GetObjectsByClass(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
+
+    [Test]
     [TestCase('Object exists', 'Panel1')]
     [TestCase('Object exists case insensitive', 'PANEL1')]
     [TestCase('Object doesn''t exist', 'Panel99')]
@@ -83,7 +96,7 @@ type
 implementation
 
 uses
-  System.IOUtils;
+  System.IOUtils, Generics.Collections;
 
 const TEST_FILE = '../example/VCL-Example-Form/Main.dfm';
 
@@ -123,6 +136,19 @@ begin
     Assert.IsNotNull(DfmFile.GetObject(AName, ARecursive))
   else
     Assert.IsNull(DfmFile.GetObject(AName, ARecursive));
+end;
+
+procedure DfmObjectTest.GetObjectsByClass(const AClassName: String; ARecursive: Boolean; AExpectedCount: Integer);
+var
+  Objects: TList<TDfmObject>;
+begin
+  Objects := DfmFile.GetObjectsByClass(AClassName, ARecursive);
+  try
+    Assert.IsNotNull(Objects);
+    Assert.AreEqual(Objects.Count, AExpectedCount);
+  finally
+    Objects.Free;
+  end;
 end;
 
 procedure DfmObjectTest.GetProperty(const AName, AExpected: String);
