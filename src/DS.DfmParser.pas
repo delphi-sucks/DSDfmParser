@@ -285,8 +285,8 @@ begin
   Objects.Clear;
   DfmObject := nil;
 
-  RegExObject := TRegEx.Create('^(\w+) (?:([\w\däöü_]+): )?([\w\d_]+)(?: \[(\d+)\])?$', [roIgnoreCase]);
-  RegExProperty := TRegEx.Create('^([\w\d_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
+  RegExObject := TRegEx.Create('^(\w+) (?:([\p{L}\d_]+): )?([\p{L}\d_]+)(?: \[(\d+)\])?$', [roIgnoreCase]);
+  RegExProperty := TRegEx.Create('^([\p{L}\d_\.]+) =(?:(?: (.*)$)|$)', [roIgnoreCase]);
   Lines := TStringList.Create;
   try
     Lines.Delimiter := LF;
