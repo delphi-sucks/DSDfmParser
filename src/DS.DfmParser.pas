@@ -59,13 +59,17 @@ type
 
   TDfmFile = class(TDfmObject)
   private
+    FEncoding: TEncoding;
     procedure Parse(const ADfmContent: String);
+    procedure SetEncoding(const Value: TEncoding);
   public
     constructor Create; overload;
     procedure Save(const AFileName: String);
     procedure LoadFromFile(const AFileName: String);
     procedure LoadFromString(const ADfmContent: String);
     function GetDfm: String;
+
+    property Encoding: TEncoding read FEncoding write SetEncoding;
   end;
 
 implementation
@@ -468,6 +472,8 @@ end;
 constructor TDfmFile.Create;
 begin
   inherited Create(nil, EmptyStr);
+
+  FEncoding := nil;
 end;
 
 procedure TDfmFile.Save(const AFileName: String);
@@ -477,15 +483,27 @@ begin
   Lines := TStringList.Create;
   try
     Lines.Text := GetDfm;
-    Lines.SaveToFile(AFileName);
+    Lines.SaveToFile(AFileName, Encoding);
   finally
     Lines.Free;
   end;
 end;
 
-procedure TDfmFile.LoadFromFile(const AFileName: String);
+procedure TDfmFile.SetEncoding(const Value: TEncoding);
 begin
-  Parse(TFile.ReadAllText(AFileName));
+  FEncoding := Value;
+end;
+
+procedure TDfmFile.LoadFromFile(const AFileName: String);
+var
+  FileBytes: TBytes;
+  BOMLength: Integer;
+  FileText: string;
+begin
+  FileBytes := TFile.ReadAllBytes(AFileName);
+  BOMLength := TEncoding.GetBufferEncoding(FileBytes, FEncoding);
+  FileText := Encoding.GetString(FileBytes, BOMLength, Length(FileBytes) - BOMLength);
+  Parse(FileText);
 end;
 
 procedure TDfmFile.LoadFromString(const ADfmContent: String);
